@@ -20,7 +20,7 @@ const App = () => {
 
   const onClick = () => {
     if (!ref.current) {
-      return;
+      return; //don't waist my time, return immediately!
     }
 
     console.log(ref.current);
