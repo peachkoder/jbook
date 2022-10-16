@@ -18,12 +18,17 @@ const App = () => {
     });
   };
 
-  const onClick = () => {
+  const onClick = async () => {
     if (!ref.current) {
       return; //don't waist my time, return immediately!
     }
 
-    console.log(ref.current);
+    const result = await ref.current.transform(input, {
+      loader: "jsx", //handle the type code - language
+      target: "es2015", // look for esbuild's documentation about this one
+    });
+    console.log(result);
+    setCode(result.code);
   };
 
   return (
