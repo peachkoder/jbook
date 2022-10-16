@@ -1,8 +1,9 @@
 import ReactDOM from "react-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import * as esbuild from "esbuild-wasm";
 
 const App = () => {
+  const ref = useRef<any>();
   const [input, setInput] = useState("");
   const [code, setCode] = useState("");
 
@@ -11,15 +12,18 @@ const App = () => {
   }, []); //[] is empty so useEffect is called just once
 
   const startservice = async () => {
-    const service = await esbuild.startService({
+    ref.current = await esbuild.startService({
       worker: true,
       wasmURL: "/esbuild.wasm",
     });
-    console.log(service);
   };
 
   const onClick = () => {
-    console.log(input);
+    if (!ref.current) {
+      return;
+    }
+
+    console.log(ref.current);
   };
 
   return (
