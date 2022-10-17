@@ -1,4 +1,5 @@
 import ReactDOM from "react-dom";
+import React from "react";
 import { useState, useEffect, useRef } from "react";
 import * as esbuild from "esbuild-wasm";
 import { unpkgPathPlugin } from "./plugins/unpkg-path-plugin";

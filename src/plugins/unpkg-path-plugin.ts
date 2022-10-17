@@ -1,6 +1,19 @@
 import * as esbuild from 'esbuild-wasm';
 import axios from 'axios';
+import localforage from 'localforage';
+
+const fileCache = localforage.createInstance({
+  name: 'filecache'
+});
  
+// indexedDB testing
+// (async ()=>{
+//   await fileCache.setItem('color', 'red');
+
+//   const color = await fileCache.getItem('color');
+//   console.log(color)
+// ;})()
+
 export const unpkgPathPlugin = () => {
   return {
     name: 'unpkg-path-plugin',
@@ -47,14 +60,23 @@ export const unpkgPathPlugin = () => {
             `,
           };
         }  
+        // Check to see if we have already fetched this file
+        // and if it is in the cache
+        const cachedResult = await fileCache.getItem(args.path);
+        if (cachedResult){
+          return cachedResult;
+        }
         // loading from https://unpkg.com/tiny-test-pkg@1.0.0/index.js
         const {data, request} = await axios.get(args.path);
-        console.log( new URL('./', request.responseURL).pathname);
-        return {
+        // console.log( new URL('./', request.responseURL).pathname);
+        const result =  {
           loader: 'jsx',
           contents: data,
           resolveDir: new URL('./', request.responseURL).pathname //  "https://unpkg.com/nested-test-pkg@1.0.0/src/index.js"
         }
+         // store response in cache
+        await fileCache.setItem(args.path, result);
+        return result;
       });
     },
   };
