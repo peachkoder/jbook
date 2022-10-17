@@ -1,14 +1,24 @@
 import * as esbuild from 'esbuild-wasm';
+import axios from 'axios';
  
 export const unpkgPathPlugin = () => {
   return {
     name: 'unpkg-path-plugin',
-    setup(build: esbuild.PluginBuild) {
+    setup(build: esbuild.PluginBuild) {  //build is the bundling process
+      // onResolve look after the files, give to them an atttibute namespace 'a'
+      // namespace is important to onLoad method because you can filter by namespace too
       build.onResolve({ filter: /.*/ }, async (args: any) => {
-        console.log('onResole', args);
-        return { path: args.path, namespace: 'a' };
+        console.log('onResolve', args);
+        if (args.path === 'index.js'){
+          return { path: args.path, namespace: 'a' };
+        } else if(args.path ==='tiny-test-pkg') {
+          return { path: 'https://unpkg.com/tiny-test-pkg@1.0.0/index.js', namespace: 'a'}
+        }     
       });
  
+      // In this example onLoad only works with files with attibute namespace 'a'.
+      // Namespace attribute was settled on onResolve method
+      // build.onLoad({ filter: /.*/, namespace: 'a' }, async (args: any) => {
       build.onLoad({ filter: /.*/ }, async (args: any) => {
         console.log('onLoad', args);
  
@@ -16,15 +26,16 @@ export const unpkgPathPlugin = () => {
           return {
             loader: 'jsx',
             contents: `
-              import message from './message';
+              const message = require('tiny-test-pkg');
               console.log(message);
             `,
           };
-        } else {
-          return {
-            loader: 'jsx',
-            contents: 'export default "hi there!"',
-          };
+        }  
+        // loading from https://unpkg.com/tiny-test-pkg@1.0.0/index.js
+        const {data} = await axios.get(args.path);
+        return {
+          loader: 'jsx',
+          contents: data
         }
       });
     },
