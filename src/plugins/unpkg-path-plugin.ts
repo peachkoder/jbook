@@ -14,33 +14,34 @@ const fileCache = localforage.createInstance({
 //   console.log(color)
 // ;})()
 
-export const unpkgPathPlugin = () => {
+export const unpkgPathPlugin = (inputCode: string) => {
   return {
     name: 'unpkg-path-plugin',
-    setup(build: esbuild.PluginBuild) {  //build is the bundling process
+    setup(build: esbuild.PluginBuild) { 
+      //build is the bundling process
       // onResolve look after the files, give to them an atttibute namespace 'a'
       // namespace is important to onLoad method because you can filter by namespace too
+
+      // Handle root entry file of 'index.js'
+      build.onResolve({filter: /(^index\.js$)/}, () => {
+        return {path: 'index.js',namespace: 'a'}
+      })
+
+      // Handle relative paths in a module
+      build.onResolve({filter: /^\.+\//}, (args: any) => {
+        return {
+          namespace: 'a',
+          path: new URL(args.path, 'https://unpkg.com' + args.resolveDir + '/').href
+        }
+      })
+      
+        
+      // Handle main file of a module
       build.onResolve({ filter: /.*/ }, async (args: any) => {
-        console.log('onResolve', args);
-        if (args.path === 'index.js'){
-          return { path: args.path, namespace: 'a' };
-        }
-
-        if (args.path.includes('./') || args.path.includes('../') ) {
-          return {
-            namespace: 'a',
-            path: new URL(args.path, 'https://unpkg.com' + args.resolveDir + '/').href
-          }
-        }
-
         return {
           namespace: 'a',
           path: `https://unpkg.com/${args.path}`
-        }
-        // } else if(args.path ==='tiny-test-pkg') {
-        //   return { path: 'https://unpkg.com/tiny-test-pkg@1.0.0/index.js', 
-        //   namespace: 'a'}
-        // }     
+        }    
       });
  
       // In this example onLoad only works with files with attibute namespace 'a'.
@@ -49,15 +50,13 @@ export const unpkgPathPlugin = () => {
       build.onLoad({ filter: /.*/ }, async (args: any) => {
         console.log('onLoad', args);
  
+        // if the build is trying to get index file from the local storage, 
+        // we give what the buid needs...the contents
+        // Contents has "jsx" code that will be bundled.
         if (args.path === 'index.js') {
           return {
             loader: 'jsx',
-            contents: `
-              const react = require('react');
-              const reactDOM = require('react-dom');
-              import React, { useState } from 'react';
-              console.log(react, reactDOM);
-            `,
+            contents: inputCode,
           };
         }  
         // Check to see if we have already fetched this file

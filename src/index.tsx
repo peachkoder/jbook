@@ -30,11 +30,12 @@ const App = () => {
       target: "es2015", // look for esbuild's documentation about this one
     }); */
 
+    // build the bundle
     const result = await ref.current.build({
       entryPoints: ["index.js"],
       bundle: true,
       write: false,
-      plugins: [unpkgPathPlugin()],
+      plugins: [unpkgPathPlugin(input)],
       define: {
         "process.env.NODE_ENV": '"production"', // replace with string "production"
         global: "window",
