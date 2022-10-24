@@ -17,7 +17,7 @@ export const fetchplugin = (inputCode: string) => {
         console.log('onLoad', args);
  
         // if the build is trying to get index file from the local storage, 
-        // we give what the buid needs...the contents
+        // we give what the build needs...the contents
         // Contents has "jsx" code that will be bundled.
         if (args.path === 'index.js') {
           return {
@@ -31,11 +31,13 @@ export const fetchplugin = (inputCode: string) => {
         if (cachedResult){
           return cachedResult;
         }
+
+        const loader = args.path.match(/.css$/) ? 'css' : 'jsx';
         // loading from https://unpkg.com/tiny-test-pkg@1.0.0/index.js
         const {data, request} = await axios.get(args.path);
         // console.log( new URL('./', request.responseURL).pathname);
         const result: esbuild.OnLoadResult =  {
-          loader: 'jsx',
+          loader,
           contents: data,
           resolveDir: new URL('./', request.responseURL).pathname //  "https://unpkg.com/nested-test-pkg@1.0.0/src/index.js"
         }
