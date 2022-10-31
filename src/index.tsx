@@ -46,13 +46,19 @@ const App = () => {
     //console.log(result);
     setCode(result.outputFiles[0].text);
 
-    try {
-      // be carefull eval can harm you ;)
-      eval(result.outputFiles[0].text);
-    } catch (error) {
-      alert(error);
-    }
+    // try {
+    //   // be carefull eval can harm you ;)
+    //   eval(result.outputFiles[0].text);
+    // } catch (error) {
+    //   alert(error);
+    // }
   };
+
+  const html = `
+  <script>
+  ${code}
+  </script>
+`;
 
   return (
     <div>
@@ -64,7 +70,7 @@ const App = () => {
         <button onClick={onClick}>Submit</button>
       </div>
       <pre>{code}</pre>
-      <iframe src="/test.html"></iframe>
+      <iframe sandbox="allow-scripts" srcDoc={html}></iframe>
     </div>
   );
 };
