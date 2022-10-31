@@ -42,8 +42,16 @@ const App = () => {
         global: "window",
       },
     });
-    console.log(result);
+
+    //console.log(result);
     setCode(result.outputFiles[0].text);
+
+    try {
+      // be carefull eval can harm you ;)
+      eval(result.outputFiles[0].text);
+    } catch (error) {
+      alert(error);
+    }
   };
 
   return (
@@ -56,6 +64,7 @@ const App = () => {
         <button onClick={onClick}>Submit</button>
       </div>
       <pre>{code}</pre>
+      <iframe src="/test.html"></iframe>
     </div>
   );
 };
